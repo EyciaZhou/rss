@@ -39,7 +39,7 @@ func parseRSS2(data []byte, read *db) (*Feed, error) {
 		next := time.Now().Add(time.Duration(channel.MinsToLive) * time.Minute)
 		for _, hour := range channel.SkipHours {
 			if hour == next.Hour() {
-				next.Add(time.Duration(60-next.Minute()) * time.Minute)
+				next.Add(time.Duration(60 - next.Minute()) * time.Minute)
 			}
 		}
 		trying := true
@@ -47,7 +47,7 @@ func parseRSS2(data []byte, read *db) (*Feed, error) {
 			trying = false
 			for _, day := range channel.SkipDays {
 				if strings.Title(day) == next.Weekday().String() {
-					next.Add(time.Duration(24-next.Hour()) * time.Hour)
+					next.Add(time.Duration(24 - next.Hour()) * time.Hour)
 					trying = true
 					break
 				}
@@ -90,7 +90,11 @@ func parseRSS2(data []byte, read *db) (*Feed, error) {
 
 		next := new(Item)
 		next.Title = item.Title
+		next.Summary = item.Content
 		next.Content = item.Content
+		if item.ContentEncoded != "" {
+			next.Content = item.ContentEncoded
+		}
 		next.Link = item.Link
 		if item.Date != "" {
 			next.Date, err = parseTime(item.Date)
@@ -158,14 +162,15 @@ type rss2_0Link struct {
 }
 
 type rss2_0Item struct {
-	XMLName    xml.Name          `xml:"item"`
-	Title      string            `xml:"title"`
-	Content    string            `xml:"description"`
-	Link       string            `xml:"link"`
-	PubDate    string            `xml:"pubDate"`
-	Date       string            `xml:"date"`
-	ID         string            `xml:"guid"`
-	Enclosures []rss2_0Enclosure `xml:"enclosure"`
+	XMLName        xml.Name          `xml:"item"`
+	Title          string            `xml:"title"`
+	Content        string            `xml:"description"`
+	ContentEncoded string            `xml:"encoded"`
+	Link           string            `xml:"link"`
+	PubDate        string            `xml:"pubDate"`
+	Date           string            `xml:"date"`
+	ID             string            `xml:"guid"`
+	Enclosures     []rss2_0Enclosure `xml:"enclosure"`
 }
 
 type rss2_0Enclosure struct {
